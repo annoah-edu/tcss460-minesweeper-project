@@ -1,0 +1,50 @@
+[
+  {
+    "scoreId": "6f1c2a0e-3b7d-4c55-9a51-0d1e2f3a4b01",
+    "playerName": "sample_alex",
+    "difficulty": "beginner",
+    "timeSeconds": 18.4,
+    "hintsUsed": 0,
+    "completedAt": "2026-11-01T18:22:05.000Z"
+  },
+  {
+    "scoreId": "6f1c2a0e-3b7d-4c55-9a51-0d1e2f3a4b02",
+    "playerName": "sample_jordan",
+    "difficulty": "beginner",
+    "timeSeconds": 25.9,
+    "hintsUsed": 0,
+    "completedAt": "2026-11-02T02:10:41.000Z"
+  },
+  {
+    "scoreId": "6f1c2a0e-3b7d-4c55-9a51-0d1e2f3a4b03",
+    "playerName": "sample_sam",
+    "difficulty": "beginner",
+    "timeSeconds": 41.2,
+    "hintsUsed": 0,
+    "completedAt": "2026-11-03T21:47:13.000Z"
+  },
+  {
+    "scoreId": "6f1c2a0e-3b7d-4c55-9a51-0d1e2f3a4b04",
+    "playerName": "sample_alex",
+    "difficulty": "intermediate",
+    "timeSeconds": 96.7,
+    "hintsUsed": 0,
+    "completedAt": "2026-11-02T19:05:30.000Z"
+  },
+  {
+    "scoreId": "6f1c2a0e-3b7d-4c55-9a51-0d1e2f3a4b05",
+    "playerName": "sample_riley",
+    "difficulty": "intermediate",
+    "timeSeconds": 142.3,
+    "hintsUsed": 0,
+    "completedAt": "2026-11-04T16:31:52.000Z"
+  },
+  {
+    "scoreId": "6f1c2a0e-3b7d-4c55-9a51-0d1e2f3a4b06",
+    "playerName": "sample_jordan",
+    "difficulty": "expert",
+    "timeSeconds": 388.0,
+    "hintsUsed": 0,
+    "completedAt": "2026-11-05T03:58:09.000Z"
+  }
+]

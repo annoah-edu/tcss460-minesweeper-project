@@ -1,0 +1,18 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# Secrets: commit .env.example, never .env
+.env
+.env.*
+!.env.example
+
+# Runtime data (the backend recreates it from data/sample_scores.json)
+backend/data/scores.json
+
+# Logs and OS files
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
