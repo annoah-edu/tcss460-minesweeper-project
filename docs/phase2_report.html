@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MineMentor Phase II Report</title>
+<style>
+  @page { size: Letter; margin: 0.7in 0.75in; }
+  :root {
+    --text: #1f2937; --muted: #6b7280; --rule: #d1d5db; --accent: #5b21b6;
+    --soft: #f5f3ff; --code-bg: #f1f5f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto; max-width: 7.2in; padding: 24px 16px;
+    font: 10.5pt/1.5 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    color: var(--text); background: #fff;
+  }
+  @media print { body { padding: 0; max-width: none; } }
+  h1 { font-size: 22pt; margin: 0 0 4px; }
+  h2 { font-size: 15pt; margin: 28px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--accent); color: var(--accent); break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 18px 0 6px; break-after: avoid; }
+  p, li { margin: 4px 0; }
+  .subtitle { color: var(--muted); margin: 0 0 10px; }
+  .cover { width: 100%; margin: 6px 0 4px; }
+  .cover td, .cover th { border: 1px solid var(--rule); }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9.5pt; break-inside: avoid; }
+  th, td { text-align: left; vertical-align: top; padding: 5px 7px; border: 1px solid var(--rule); }
+  th { background: var(--soft); }
+  code { font: 9pt Consolas, 'Cascadia Mono', monospace; background: var(--code-bg); padding: 1px 4px; border-radius: 3px; }
+  pre { font: 8.6pt/1.4 Consolas, 'Cascadia Mono', monospace; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; break-inside: avoid; margin: 6px 0 12px; }
+  pre code { background: none; padding: 0; }
+  figure { margin: 10px 0 16px; break-inside: avoid; }
+  figure svg, figure img { width: 100%; height: auto; display: block; border: 1px solid var(--rule); border-radius: 6px; }
+  figcaption { font-size: 9pt; color: var(--muted); margin-top: 4px; }
+  blockquote { margin: 8px 0; padding: 6px 12px; border-left: 4px solid var(--accent); background: var(--soft); font-style: italic; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 600; padding: 0 6px; border-radius: 9px; white-space: nowrap; }
+  .core { background: #ede9fe; color: #5b21b6; }
+  .optional { background: #f3f4f6; color: #4b5563; }
+  .done { background: #dcfce7; color: #166534; }
+  .partial { background: #fef9c3; color: #854d0e; }
+  .planned { background: #e0f2fe; color: #075985; }
+</style>
+</head>
+<body>
+
+<h1>MineMentor: Phase II Report</h1>
+<p class="subtitle">TCSS 460: Client/Server Programming for Internet Applications &middot; System design and initial working prototype</p>
+<table class="cover">
+  <tbody>
+    <tr><th style="width:22%">Team</th><td>The Flaggers (Group 4)</td></tr>
+    <tr><th>Members</th><td>Noah (team leader), Waleid, Harman</td></tr>
+    <tr><th>Repository</th><td><code>github.com/annoah-edu/tcss460-minesweeper-project</code></td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2>Part A: Project Scope and Phase I Revisions</h2>
+
+<h3>Problem and intended users</h3>
+<p>
+  Minesweeper is a logic puzzle, but most players never learn the logic. When they get stuck they guess,
+  lose, and quit. Asking a general AI chatbot doesn't help much either: in our own early testing, the AI
+  sometimes called a square "safe" when it wasn't.
+</p>
+<p>
+  <strong>MineMentor</strong> is a Minesweeper web app that teaches as you play. Boards are generated on the server
+  and mine positions never leave it, so the game can't be cheated by inspecting the page. When a player asks
+  for a hint, a <strong>rule-based solver on the server</strong> finds a square that is provably safe and records
+  which numbered cells prove it. The AI only puts that proof into plain language, so the explanation is
+  always as correct as the hint. User accounts save each player's games so they can see their wins, losses
+  and best times improve.
+</p>
+<p><strong>Intended users:</strong></p>
+<ul>
+  <li><strong>New players</strong> who want to learn how to read the numbers instead of guessing.</li>
+  <li><strong>Casual players</strong> who want a quick game in the browser, with help when they are stuck.</li>
+  <li><strong>Returning players</strong> who want to track wins, losses and best times for each difficulty.</li>
+</ul>
+
+<h3>Revisions based on Phase I feedback</h3>
+<p>The grader's Phase I feedback was positive:</p>
+<blockquote>"Strong AI design overall: the solver tool keeps hints correct and the AI explains them."</blockquote>
+<p>No concerns were raised, so the core concept and scope are unchanged. We used Phase II to make the
+weakest parts of the proposal more specific, and built several of them into the prototype:</p>
+<table>
+  <thead><tr><th style="width:20%">Revision</th><th>What changed</th><th style="width:16%">Status</th></tr></thead>
+  <tbody>
+    <tr><td>AI hints carry their proof</td><td>The solver returns the safe cell <em>and</em> its justification: which numbered cells and which deduced mines prove it is safe. The LLM may only rephrase that justification.</td><td><span class="tag done">Built</span> (solver + proof)</td></tr>
+    <tr><td>Honest wording</td><td>If the solver finds no provably safe cell, the hint says <em>"No guaranteed safe move was found"</em> instead of claiming none exists or inventing one.</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>Technical approach</td><td>Phase I listed HTML, CSS and Tailwind as external services. They are now part of the frontend stack. The real external dependencies are the LLM API and the database (see B.1 and D.3).</td><td><span class="tag done">Updated</span></td></tr>
+    <tr><td>Security</td><td>Mine positions stay on the server. The browser only receives revealed cells, so players can't inspect the page to find mines.</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>AI cost and abuse</td><td>From our risk review: every hint goes through our server, which keeps the API key private, and each game is limited to 3 hints. A short cooldown between hints will be added with the LLM.</td><td><span class="tag partial">Limit built</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Features and priorities</h3>
+<table>
+  <thead><tr><th style="width:28%">Feature</th><th style="width:11%">Priority</th><th style="width:15%">Phase II</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>Server-generated boards</td><td><span class="tag core">Core</span></td><td><span class="tag done">Built</span></td><td>Beginner 9×9 (10 mines), Intermediate 16×16 (40), Expert 16×30 (99). Mines are placed after the first click, so it is always safe.</td></tr>
+    <tr><td>Gameplay</td><td><span class="tag core">Core</span></td><td><span class="tag done">Built</span></td><td>Reveal with automatic opening of empty areas, flag and unflag, mine counter, server-side timer, win/loss detection.</td></tr>
+    <tr><td>AI hint explainer: solver</td><td><span class="tag core">Core</span></td><td><span class="tag done">Built</span></td><td>Finds a provably safe square from the visible numbers only, highlights it on the board, and returns the proof plus a template explanation.</td></tr>
+    <tr><td>AI hint explainer: LLM</td><td><span class="tag core">Core</span></td><td><span class="tag planned">Phase III</span></td><td>The LLM rewrites the solver's proof in friendlier language. If the call fails, the template explanation is used.</td></tr>
+    <tr><td>User accounts</td><td><span class="tag core">Core</span></td><td><span class="tag planned">Phase III</span></td><td>Sign up, log in and log out. Passwords are stored hashed, never as plain text.</td></tr>
+    <tr><td>Saved game history (My Stats)</td><td><span class="tag core">Core</span></td><td><span class="tag planned">Phase III</span></td><td>Wins, losses and best time for each difficulty, from the games saved for each account.</td></tr>
+    <tr><td>Leaderboard</td><td><span class="tag optional">Optional</span></td><td><span class="tag done">Built</span></td><td>Fastest server-timed wins for each difficulty. Uses a player name for now and will be tied to accounts.</td></tr>
+    <tr><td>Post-game review</td><td><span class="tag optional">Optional</span></td><td><span class="tag planned">Phase III</span></td><td>After a game, replays the saved moves and points out where a safe move was available.</td></tr>
+  </tbody>
+</table>
+<p>
+  <strong>MVP:</strong> (1) playable Minesweeper with Beginner, Intermediate and Expert boards generated on the server,
+  (2) user accounts with saved game history (wins, losses, best times per difficulty), and (3) the AI hint explainer
+  backed by the server-side solver. The Phase II prototype covers (1) completely and the solver half of (3).
+  The leaderboard and post-game review are extras and are only finished once the MVP works.
+</p>
+
+<!-- ============================================================ -->
+<h2>Part B: System Architecture and Frontend Design</h2>
+
+<h3>B.1 High-level system architecture</h3>
+<figure>
+<svg viewBox="0 0 760 500" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif" font-size="11">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+    </marker>
+    <marker id="arrow-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+  <rect width="760" height="500" fill="#ffffff"/>
+
+  <!-- Browser / React -->
+  <rect x="16" y="16" width="232" height="420" rx="10" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="132" y="38" text-anchor="middle" font-weight="700" font-size="13" fill="#075985">Browser: React frontend</text>
+  <text x="132" y="54" text-anchor="middle" fill="#475569">Vite dev server :5173</text>
+  <g fill="#fff" stroke="#7dd3fc">
+    <rect x="30" y="66" width="204" height="34" rx="6"/>
+    <rect x="30" y="106" width="204" height="34" rx="6"/>
+    <rect x="30" y="146" width="204" height="34" rx="6"/>
+    <rect x="30" y="186" width="204" height="34" rx="6"/>
+    <rect x="30" y="226" width="204" height="34" rx="6"/>
+    <rect x="30" y="266" width="204" height="34" rx="6"/>
+    <rect x="30" y="306" width="204" height="34" rx="6"/>
+  </g>
+  <text x="40" y="81" font-weight="600">App</text><text x="40" y="94" fill="#475569">game + hint state, sends requests</text>
+  <text x="40" y="121" font-weight="600">NavBar</text><text x="40" y="134" fill="#475569">Play, My Stats, Leaderboard, Log in</text>
+  <text x="40" y="161" font-weight="600">NewGameForm + StatusBar</text><text x="40" y="174" fill="#475569">difficulty, mines left, timer, result</text>
+  <text x="40" y="201" font-weight="600">GameBoard → Cell</text><text x="40" y="214" fill="#475569">click reveal, right-click flag, hint glow</text>
+  <text x="40" y="241" font-weight="600">HintPanel</text><text x="40" y="254" fill="#475569">Get Hint, explanation, hints left</text>
+  <text x="40" y="281" font-weight="600">Leaderboard</text><text x="40" y="294" fill="#475569">fastest wins per difficulty</text>
+  <rect x="30" y="306" width="204" height="34" rx="6" fill="#fff" stroke="#9ca3af" stroke-dasharray="4 3"/>
+  <text x="40" y="321" font-weight="600" fill="#525252">Auth + MyStats (Phase III)</text><text x="40" y="334" fill="#737373">sign up / log in, history table</text>
+  <rect x="30" y="364" width="204" height="48" rx="6" fill="#0369a1"/>
+  <text x="132" y="384" text-anchor="middle" font-weight="700" fill="#fff">api.js</text>
+  <text x="132" y="400" text-anchor="middle" fill="#e0f2fe">fetch() wrapper, error messages</text>
+
+  <!-- HTTP arrows -->
+  <line x1="248" y1="378" x2="326" y2="378" stroke="#374151" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <line x1="326" y1="400" x2="248" y2="400" stroke="#374151" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="287" y="358" text-anchor="middle" font-weight="600">HTTP + JSON</text>
+  <text x="287" y="370" text-anchor="middle" fill="#475569" font-size="10">/api/* (proxied)</text>
+  <text x="287" y="416" text-anchor="middle" fill="#475569" font-size="10">revealed cells,</text>
+  <text x="287" y="428" text-anchor="middle" fill="#475569" font-size="10">hints; no mines</text>
+
+  <!-- Express -->
+  <rect x="326" y="16" width="254" height="420" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+  <text x="453" y="38" text-anchor="middle" font-weight="700" font-size="13" fill="#166534">Node.js / Express backend</text>
+  <text x="453" y="54" text-anchor="middle" fill="#475569">server.js → app.js  :3001</text>
+  <g fill="#fff" stroke="#86efac">
+    <rect x="340" y="66" width="226" height="46" rx="6"/>
+    <rect x="340" y="118" width="226" height="46" rx="6"/>
+    <rect x="340" y="170" width="226" height="46" rx="6"/>
+    <rect x="340" y="222" width="108" height="58" rx="6"/>
+    <rect x="458" y="222" width="108" height="58" rx="6"/>
+    <rect x="340" y="286" width="226" height="46" rx="6"/>
+  </g>
+  <text x="350" y="83" font-weight="600">Middleware</text>
+  <text x="350" y="98" fill="#475569">CORS, JSON parser, one error format</text>
+  <text x="350" y="135" font-weight="600">Routes + validation</text>
+  <text x="350" y="150" fill="#475569">games, hint, leaderboard → 400/404/409/429</text>
+  <text x="350" y="187" font-weight="600">Game engine (lib/board.js)</text>
+  <text x="350" y="202" fill="#475569">mines, flood fill, win/loss, board view</text>
+  <text x="350" y="239" font-weight="600">Hint solver</text>
+  <text x="350" y="254" fill="#475569">lib/solver.js:</text>
+  <text x="350" y="268" fill="#475569">safe cell + proof</text>
+  <text x="468" y="239" font-weight="600">Stores</text>
+  <text x="468" y="254" fill="#475569">games: memory</text>
+  <text x="468" y="268" fill="#475569">scores: file</text>
+  <rect x="340" y="286" width="226" height="46" rx="6" fill="#fff" stroke="#a3a3a3" stroke-dasharray="4 3"/>
+  <text x="350" y="303" font-weight="600" fill="#525252">LLM client + auth (Phase III)</text>
+  <text x="350" y="318" fill="#737373">rewords the proof; sessions, bcrypt</text>
+  <text x="453" y="420" text-anchor="middle" fill="#475569" font-size="10">Tests: node --test (18 passing)</text>
+
+  <!-- Storage -->
+  <rect x="616" y="140" width="130" height="64" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="681" y="162" text-anchor="middle" font-weight="700" fill="#92400e">scores.json</text>
+  <text x="681" y="178" text-anchor="middle" fill="#475569">Phase II storage</text>
+  <text x="681" y="192" text-anchor="middle" fill="#475569">(leaderboard)</text>
+  <rect x="616" y="222" width="130" height="72" rx="8" fill="#fff" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="681" y="244" text-anchor="middle" font-weight="700" fill="#92400e">PostgreSQL / SQLite</text>
+  <text x="681" y="260" text-anchor="middle" fill="#475569">Phase III: users,</text>
+  <text x="681" y="274" text-anchor="middle" fill="#475569">games, moves</text>
+  <line x1="566" y1="236" x2="614" y2="190" stroke="#374151" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <line x1="566" y1="264" x2="614" y2="260" stroke="#9ca3af" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arrow-grey)"/>
+
+  <!-- External AI -->
+  <rect x="616" y="320" width="130" height="64" rx="8" fill="#fff" stroke="#7e22ce" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="681" y="342" text-anchor="middle" font-weight="700" fill="#6b21a8">LLM API (Claude)</text>
+  <text x="681" y="358" text-anchor="middle" fill="#475569">Phase III, server-only</text>
+  <text x="681" y="372" text-anchor="middle" fill="#475569">rewords the proof</text>
+  <line x1="566" y1="314" x2="614" y2="346" stroke="#9ca3af" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arrow-grey)"/>
+
+  <!-- Legend -->
+  <line x1="20" y1="470" x2="50" y2="470" stroke="#374151" stroke-width="1.6"/>
+  <text x="56" y="474">built in Phase II</text>
+  <line x1="170" y1="470" x2="200" y2="470" stroke="#9ca3af" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <text x="206" y="474">planned for Phase III</text>
+</svg>
+<figcaption>Figure 1. MineMentor architecture. Solid parts are built and working in the Phase II prototype; dashed parts are planned for Phase III.</figcaption>
+</figure>
+
+<p><strong>Tech stack.</strong> React (Vite) with HTML, CSS and JavaScript on the frontend. The prototype uses plain CSS
+and will move to Tailwind CSS as the final design is built. Node.js and Express on the backend. The two
+<em>external</em> dependencies are the database and the LLM API.</p>
+
+<p><strong>How the components interact.</strong> React never decides anything about the game. It sends the player's
+action to the API and draws whatever comes back.</p>
+<ul>
+  <li><strong>Moves:</strong> clicking a cell sends <code>POST /api/games/:id/reveal</code> with the row and column. Routes
+    validate the input, the <strong>game engine</strong> applies the move, and the response is a board view in which
+    unopened cells are just <code>"hidden"</code>. During development, Vite proxies <code>/api</code> to Express, so the browser
+    talks to a single origin.</li>
+  <li><strong>Hints:</strong> <em>Get Hint</em> sends <code>POST /api/games/:id/hint</code>. The <strong>solver</strong> reads only what the
+    player can see (revealed numbers and hidden cells; player flags are ignored because they can be wrong). It works
+    out which hidden cells must be mines and which must be safe, then returns one safe cell, the proof, and an
+    explanation. As a safety net, the server checks the cell against the real board and refuses to send a hint that
+    would be wrong. React highlights the cell in yellow and shows the explanation.</li>
+  <li><strong>Stores:</strong> Phase II keeps games in memory and leaderboard scores in a JSON file. In Phase III both move
+    to the relational database, behind the same <code>gameStore</code> / <code>scoreStore</code> functions, so the routes don't change.</li>
+  <li><strong>Errors</strong> from any layer reach the browser in one format, <code>{ "error": { "status", "message" } }</code>, and
+    React shows the message to the player.</li>
+</ul>
+
+<h3>B.2 Frontend wireframe: the Play page</h3>
+<figure>
+<svg viewBox="0 0 760 450" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif" font-size="11">
+  <defs>
+    <pattern id="cells" x="62" y="110" width="24" height="24" patternUnits="userSpaceOnUse">
+      <rect width="24" height="24" fill="none" stroke="#9ca3af" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="760" height="450" fill="#f8fafc"/>
+  <!-- nav -->
+  <rect x="0" y="0" width="760" height="40" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="14" y="10" width="20" height="20" fill="none" stroke="#64748b" stroke-dasharray="2 2"/>
+  <text x="18" y="24" font-size="7" fill="#64748b">Logo</text>
+  <text x="42" y="25" font-weight="700" font-size="13">MineMentor</text>
+  <text x="300" y="25" font-weight="700" text-decoration="underline">Play</text>
+  <text x="340" y="25" fill="#475569">My Stats</text>
+  <text x="400" y="25" fill="#475569">Leaderboard (optional)</text>
+  <rect x="620" y="9" width="56" height="22" rx="4" fill="#fff" stroke="#64748b"/><text x="648" y="24" text-anchor="middle">Log in</text>
+  <rect x="684" y="9" width="62" height="22" rx="4" fill="#2563eb"/><text x="715" y="24" text-anchor="middle" fill="#fff">Sign up</text>
+
+  <!-- game panel -->
+  <rect x="14" y="54" width="470" height="382" rx="6" fill="#fff" stroke="#94a3b8"/>
+  <text x="26" y="80">Difficulty</text>
+  <rect x="84" y="66" width="96" height="22" rx="3" fill="#fff" stroke="#64748b"/><text x="92" y="81">Beginner ▾</text>
+  <rect x="190" y="66" width="74" height="22" rx="3" fill="#fff" stroke="#64748b"/><text x="198" y="81" font-family="Consolas, monospace">Mines: 10</text>
+  <rect x="272" y="66" width="74" height="22" rx="3" fill="#fff" stroke="#64748b"/><text x="280" y="81" font-family="Consolas, monospace">Time: 042</text>
+  <rect x="392" y="66" width="80" height="22" rx="3" fill="#2563eb"/><text x="432" y="81" text-anchor="middle" fill="#fff">New Game</text>
+  <line x1="14" y1="98" x2="484" y2="98" stroke="#cbd5e1"/>
+
+  <!-- board 9x9 at 24px, origin (62,134)... scaled to fit -->
+  <rect x="62" y="110" width="216" height="216" fill="#e5e7eb"/>
+  <g fill="#ffffff">
+    <rect x="134" y="182" width="72" height="24"/>
+    <rect x="110" y="206" width="96" height="24"/>
+    <rect x="110" y="230" width="72" height="24"/>
+  </g>
+  <rect x="182" y="230" width="24" height="24" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>
+  <rect x="62" y="110" width="216" height="216" fill="url(#cells)"/>
+  <rect x="62" y="110" width="216" height="216" fill="none" stroke="#9ca3af"/>
+  <g text-anchor="middle" font-weight="700" fill="#1f2937">
+    <text x="170" y="198">1</text><text x="194" y="198">1</text>
+    <text x="122" y="222">1</text><text x="194" y="222">2</text>
+    <text x="122" y="246">1</text><text x="146" y="246">2</text>
+  </g>
+  <text x="194" y="174" text-anchor="middle">⚑</text>
+  <text x="170" y="346" text-anchor="middle" fill="#64748b" font-size="10">Click to reveal, right-click or long-press to flag</text>
+
+  <!-- right column -->
+  <rect x="496" y="54" width="250" height="134" rx="6" fill="#fff" stroke="#94a3b8"/>
+  <text x="508" y="74" font-weight="700">AI Hint</text>
+  <rect x="508" y="82" width="66" height="22" rx="3" fill="#2563eb"/><text x="541" y="97" text-anchor="middle" fill="#fff">Get Hint</text>
+  <rect x="508" y="112" width="226" height="64" rx="4" fill="#fff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="621" y="138" text-anchor="middle" fill="#64748b" font-size="10">AI explanation appears here: which cell</text>
+  <text x="621" y="152" text-anchor="middle" fill="#64748b" font-size="10">is safe and why, in plain language</text>
+
+  <rect x="496" y="198" width="250" height="140" rx="6" fill="#fff" stroke="#94a3b8"/>
+  <text x="508" y="218" font-weight="700">My Stats</text>
+  <g font-size="10">
+    <rect x="508" y="226" width="226" height="100" fill="#fff" stroke="#cbd5e1"/>
+    <line x1="508" y1="246" x2="734" y2="246" stroke="#cbd5e1"/>
+    <line x1="508" y1="272" x2="734" y2="272" stroke="#cbd5e1"/>
+    <line x1="508" y1="298" x2="734" y2="298" stroke="#cbd5e1"/>
+    <line x1="588" y1="226" x2="588" y2="326" stroke="#cbd5e1"/>
+    <line x1="626" y1="226" x2="626" y2="326" stroke="#cbd5e1"/>
+    <line x1="672" y1="226" x2="672" y2="326" stroke="#cbd5e1"/>
+    <text x="514" y="240" font-weight="600">Level</text><text x="594" y="240" font-weight="600">Wins</text><text x="632" y="240" font-weight="600">Losses</text><text x="678" y="240" font-weight="600">Best time</text>
+    <text x="514" y="263">Beginner</text><text x="594" y="263">--</text><text x="632" y="263">--</text><text x="678" y="263">--:--</text>
+    <text x="514" y="289">Intermediate</text><text x="594" y="289">--</text><text x="632" y="289">--</text><text x="678" y="289">--:--</text>
+    <text x="514" y="315">Expert</text><text x="594" y="315">--</text><text x="632" y="315">--</text><text x="678" y="315">--:--</text>
+  </g>
+
+  <rect x="496" y="348" width="250" height="88" rx="6" fill="#fff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="621" y="396" text-anchor="middle" fill="#64748b" font-size="10">Post-game review (optional)</text>
+
+  <!-- callouts -->
+  <g font-weight="600" font-size="10">
+    <circle cx="300" cy="216" r="9" fill="#5b21b6"/><text x="300" y="220" text-anchor="middle" fill="#fff">1</text>
+    <circle cx="364" cy="77" r="9" fill="#5b21b6"/><text x="364" y="81" text-anchor="middle" fill="#fff">2</text>
+    <circle cx="732" cy="72" r="9" fill="#5b21b6"/><text x="732" y="76" text-anchor="middle" fill="#fff">3</text>
+    <circle cx="732" cy="216" r="9" fill="#5b21b6"/><text x="732" y="220" text-anchor="middle" fill="#fff">4</text>
+    <circle cx="590" cy="25" r="9" fill="#5b21b6"/><text x="590" y="29" text-anchor="middle" fill="#fff">5</text>
+  </g>
+  <text x="314" y="212" fill="#334155">Board. The yellow square is</text>
+  <text x="314" y="226" fill="#334155">the safe cell from a hint.</text>
+</svg>
+<figcaption>Figure 2. Wireframe of the Play page. (1) board with hinted safe square, (2) game toolbar: difficulty, mine counter, timer, New Game, (3) AI Hint panel, (4) My Stats, (5) account buttons.</figcaption>
+</figure>
+
+<p><strong>How users interact with it:</strong></p>
+<ol>
+  <li>The player picks a difficulty and presses <em>New Game</em>. The board appears with every square hidden, and the mine counter and timer reset.</li>
+  <li>Clicking a square reveals it. The first click is always safe and opens an area. Right-click (or long-press, or <em>Flag mode</em> on touch screens) places a flag, and the mine counter goes down.</li>
+  <li>When stuck, the player presses <em>Get Hint</em>. A provably safe square turns yellow on the board, and the panel explains which numbers prove it. If no square can be proven safe, the panel says so instead of guessing. Each game allows 3 hints.</li>
+  <li>The game ends on a mine (all mines are shown) or when every safe square is revealed. With accounts in Phase III, the result is saved and <em>My Stats</em> updates. Until then, a named win goes on the leaderboard.</li>
+</ol>
+
+<figure>
+  <img src="screenshots/prototype-hint.png" alt="Screenshot of the MineMentor prototype showing a highlighted hint" />
+  <figcaption>Figure 3. The working Phase II prototype, Intermediate board. <em>Get Hint</em> highlighted a provably safe square in yellow, and the panel shows the solver's explanation. My Stats and Log in / Sign up are greyed out until accounts are added in Phase III, so the leaderboard fills that space for now.</figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2>Part C: Preliminary Data Design</h2>
+
+<h3>Storage approach</h3>
+<p>
+  We will use a <strong>relational database</strong>, PostgreSQL or SQLite (final pick at the start of Phase III).
+  Our data has clear relationships: a user has many games, and a game has many moves. Stats such as wins,
+  losses and best times are computed with SQL queries over the games table. The schema below works in both
+  databases. Passwords are hashed with bcrypt and never stored or logged as plain text.
+</p>
+<p>
+  <strong>Phase II (now):</strong> games in progress are kept in an in-memory <code>Map</code> (cleared after 24 hours or on restart),
+  and leaderboard scores are saved to <code>backend/data/scores.json</code>. Both are behind small store modules
+  (<code>gameStore.js</code>, <code>scoreStore.js</code>), so swapping in the database only changes those two files.
+</p>
+
+<h3>Primary data</h3>
+<table>
+  <thead><tr><th style="width:12%">Table</th><th style="width:52%">Columns</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><strong>users</strong></td>
+      <td><code>user_id</code> PK, <code>username</code> UNIQUE, <code>email</code> UNIQUE, <code>password_hash</code>, <code>created_at</code></td>
+      <td>One row per account.</td></tr>
+    <tr><td><strong>games</strong></td>
+      <td><code>game_id</code> PK (UUID), <code>user_id</code> FK → users (NULL for guests), <code>difficulty</code>, <code>rows</code>, <code>cols</code>,
+        <code>mine_count</code>, <code>mine_positions</code> (cell indexes), <code>status</code> (in_progress / won / lost),
+        <code>started_at</code>, <code>ended_at</code>, <code>hints_used</code></td>
+      <td><code>mine_positions</code> is server-only and never appears in an API response. A win's time is <code>ended_at − started_at</code>.</td></tr>
+    <tr><td><strong>moves</strong></td>
+      <td><code>move_id</code> PK, <code>game_id</code> FK → games, <code>move_number</code>, <code>action</code> (reveal / flag / unflag / hint),
+        <code>row</code>, <code>col</code>, <code>created_at</code></td>
+      <td>Lets a game be resumed by replaying it, and powers the optional post-game review.</td></tr>
+  </tbody>
+</table>
+<p>The board a player sees is not stored. It is computed from <code>mine_positions</code> and the moves on every response.
+Each cell is <code>"hidden"</code>, <code>"flag"</code>, a number <code>0</code>–<code>8</code>, or, after a loss, <code>"mine"</code> / <code>"exploded"</code> / <code>"wrong-flag"</code>.</p>
+
+<h3>Sample data</h3>
+<p>Illustrative rows showing the intended structure (mine lists shortened):</p>
+<pre><code>-- users
+user_id | username | email                | password_hash               | created_at
+1       | harman   | harman@example.edu   | $2b$12$Qk7...(bcrypt hash)  | 2026-11-06 14:02:11
+
+-- games
+game_id    | user_id | difficulty   | rows | cols | mine_count | mine_positions        | status | started_at          | ended_at            | hints_used
+'1ac0…c49b' | 1       | beginner     | 9    | 9    | 10         | [11,12,25,30,47,…]    | won    | 2026-11-06 14:05:00 | 2026-11-06 14:05:42 | 1
+'8242…2ddc' | 1       | intermediate | 16   | 16   | 40         | [3,18,40,41,77,…]     | lost   | 2026-11-06 14:07:10 | 2026-11-06 14:08:55 | 2
+
+-- moves (first moves of game '1ac0…c49b')
+move_id | game_id     | move_number | action | row | col
+1       | '1ac0…c49b' | 1           | reveal | 4   | 4
+2       | '1ac0…c49b' | 2           | hint   | 1   | 4
+3       | '1ac0…c49b' | 3           | reveal | 1   | 4
+4       | '1ac0…c49b' | 4           | flag   | 1   | 3</code></pre>
+<p>My Stats is one grouped query, returned to React as JSON:</p>
+<pre><code>SELECT difficulty,
+       COUNT(*) FILTER (WHERE status = 'won')  AS wins,
+       COUNT(*) FILTER (WHERE status = 'lost') AS losses,
+       MIN(ended_at - started_at) FILTER (WHERE status = 'won') AS best_time
+FROM games WHERE user_id = $1 GROUP BY difficulty;
+
+{ "stats": [ { "difficulty": "beginner", "wins": 1, "losses": 0, "bestTimeSeconds": 42.0 },
+             { "difficulty": "intermediate", "wins": 0, "losses": 1, "bestTimeSeconds": null } ] }</code></pre>
+
+<h3>Data operations</h3>
+<table>
+  <thead><tr><th style="width:14%">Operation</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td>Create</td><td>Signing up creates a <code>users</code> row. <em>New Game</em> creates a <code>games</code> row. The first reveal places the mines, away from the clicked cell. Each reveal, flag and hint adds a <code>moves</code> row.</td></tr>
+    <tr><td>Retrieve</td><td>Load a game's board view, a user's stats and game history, and the leaderboard (fastest won games per difficulty).</td></tr>
+    <tr><td>Modify</td><td>Moves update the game's <code>status</code>, <code>ended_at</code> and <code>hints_used</code>. Reveal also opens empty areas and checks for a win or loss.</td></tr>
+    <tr><td>Process</td><td>The solver turns the visible board into a hint plus its proof. Every response hides the mines. Times are computed on the server.</td></tr>
+    <tr><td>Delete</td><td>A player can abandon an unfinished game. Unfinished guest games are cleaned up after 24 hours.</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2>Part D: Web API Design</h2>
+
+<h3>D.1 Planned Web API operations</h3>
+<table>
+  <thead><tr><th style="width:9%">Method</th><th style="width:31%">Endpoint</th><th>Functionality</th><th style="width:12%">Status</th></tr></thead>
+  <tbody>
+    <tr><td>GET</td><td><code>/api/health</code></td><td>Confirms the API is running.</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>GET</td><td><code>/api/difficulties</code></td><td>Lists difficulty presets (rows, cols, mines).</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>POST</td><td><code>/api/games</code></td><td>Starts a game. Body: <code>difficulty</code>, optional <code>playerName</code>. Returns 201 with the board view.</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>GET</td><td><code>/api/games/:gameId</code></td><td>Current state of a game (for example, after a refresh).</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>POST</td><td><code>/api/games/:gameId/reveal</code></td><td>Reveals <code>row</code>, <code>col</code>, opens empty areas, and detects a win or loss.</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>POST</td><td><code>/api/games/:gameId/flag</code></td><td>Toggles a flag on a hidden cell.</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>POST</td><td><code>/api/games/:gameId/hint</code></td><td>The solver returns a provably safe cell, its proof and an explanation (LLM-reworded in Phase III). 3 per game.</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>GET</td><td><code>/api/leaderboard?difficulty=&amp;limit=</code></td><td>Fastest wins for one difficulty, with ranks.</td><td><span class="tag done">Built</span></td></tr>
+    <tr><td>POST</td><td><code>/api/auth/signup</code></td><td>Creates an account (username, email, password, hashed with bcrypt).</td><td><span class="tag planned">Phase III</span></td></tr>
+    <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Checks the password and starts a session (HTTP-only cookie).</td><td><span class="tag planned">Phase III</span></td></tr>
+    <tr><td>POST</td><td><code>/api/auth/logout</code></td><td>Ends the session.</td><td><span class="tag planned">Phase III</span></td></tr>
+    <tr><td>GET</td><td><code>/api/users/me/stats</code></td><td>Wins, losses and best time per difficulty (the My Stats panel).</td><td><span class="tag planned">Phase III</span></td></tr>
+    <tr><td>GET</td><td><code>/api/users/me/games</code></td><td>The player's saved game history.</td><td><span class="tag planned">Phase III</span></td></tr>
+    <tr><td>GET</td><td><code>/api/games/:gameId/review</code></td><td>Post-game review: replays the moves and marks where a safe move existed (optional).</td><td><span class="tag planned">Phase III</span></td></tr>
+  </tbody>
+</table>
+
+<p><strong>Errors.</strong> Every error uses one JSON shape, for example <code>{"error":{"status":404,"message":"No game found with id nope."}}</code>.</p>
+<table>
+  <thead><tr><th style="width:12%">Status</th><th>When</th></tr></thead>
+  <tbody>
+    <tr><td>400</td><td>Invalid JSON, unknown difficulty, invalid name, row/col missing or off the board, or a bad <code>limit</code>.</td></tr>
+    <tr><td>401</td><td>(Phase III) Not logged in for an account-only endpoint, or wrong password.</td></tr>
+    <tr><td>404</td><td>No game with that id, or no such API route.</td></tr>
+    <tr><td>409</td><td>A move or hint on a game that is already won or lost.</td></tr>
+    <tr><td>429</td><td>Hint limit reached for this game.</td></tr>
+    <tr><td>500</td><td>Unexpected error. It is logged on the server, and the client gets a generic message.</td></tr>
+  </tbody>
+</table>
+
+<h3>D.2 Sample request and response</h3>
+<p>Asking for a hint on a Beginner game after the first click. This response was captured from the running prototype.
+The <code>proof</code> lists exactly which numbers and deduced mines make the cell safe. The Phase III LLM receives this
+proof and may only reword the <code>explanation</code>.</p>
+<pre><code>POST /api/games/1ac0c050-3767-4c86-bb4e-eb810c1fc49b/hint
+(no request body)</code></pre>
+<pre><code>HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "hint": {
+    "type": "safe",
+    "row": 1,
+    "col": 4,
+    "explanation": "Row 2, column 3 must be a mine: the 1 at row 3, column 2 has exactly 1 hidden neighbor left. Row 2, column 4 must be a mine: the 2 at row 3, column 3 has exactly 2 hidden neighbors left. The 2 at row 3, column 4 already touches 2 known mines, so its other hidden neighbors, including row 2, column 5, are safe.",
+    "proof": {
+      "rule": "satisfied",
+      "numbers": [{"row":2,"col":3,"value":2}],
+      "knownMines": [{"row":1,"col":2},{"row":1,"col":3}]
+    }
+  },
+  "hintsUsed": 1,
+  "hintsRemaining": 2
+}</code></pre>
+<p>(<code>row</code> and <code>col</code> in JSON start at 0. The explanation counts from 1 because it is written for players.)
+When nothing can be proven, the response is
+<code>{"hint":{"type":"none","explanation":"No guaranteed safe move was found from the numbers on the board. You may need to guess."}, …}</code>.</p>
+
+<h3>D.3 External APIs</h3>
+<table>
+  <tbody>
+    <tr><th style="width:22%">Provider and purpose</th><td><strong>Anthropic Claude API</strong> (a small, low-cost model such as Claude Haiku). It turns the solver's proof into a short, friendly explanation that a new player can learn from.</td></tr>
+    <tr><th>What it adds</th><td>The solver decides the hint, so the hint is always correct. The LLM only improves the wording and tone. The game never depends on it: if the call fails, times out, or returns text that doesn't mention the hinted cell, the template explanation (already built) is shown instead.</td></tr>
+    <tr><th>Sent</th><td>The <code>proof</code> object and template explanation from D.2, plus the visible numbers around the hinted cell. No mine positions, and no usernames or emails.</td></tr>
+    <tr><th>Received</th><td>One to three sentences of explanation, returned to React as <code>hint.explanation</code>.</td></tr>
+    <tr><th>Authentication and cost</th><td>API key sent in the <code>x-api-key</code> header and stored as <code>ANTHROPIC_API_KEY</code> in <code>backend/.env</code> (listed in <code>.env.example</code>, ignored by git). Only Express calls the API, so the key never reaches frontend code. The 3-hints-per-game limit is already enforced, and a short cooldown between hints will be added.</td></tr>
+    <tr><th>Database</th><td>PostgreSQL or SQLite (Part C). Connection settings go in <code>backend/.env</code>, never in source code.</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2>Part E: Initial Working Prototype (summary)</h2>
+<p>Source code is in <code>frontend/</code> and <code>backend/</code>. Setup and run steps are in <code>README.md</code>.
+The prototype implements the <em>User → React → Express Web API → React</em> loop for gameplay and hints:</p>
+<ul>
+  <li><strong>React frontend:</strong> eight components (<code>App</code>, <code>NavBar</code>, <code>NewGameForm</code>, <code>StatusBar</code>, <code>GameBoard</code>,
+    <code>Cell</code>, <code>HintPanel</code>, <code>Leaderboard</code>). Controls include a select, text input, buttons and clickable cells.
+    All requests go through <code>fetch</code> in <code>api.js</code>. The board, counters, hint highlight and explanation, and leaderboard
+    are drawn from the server's responses, and server errors are shown to the player. The layout works on phones.</li>
+  <li><strong>Express backend:</strong> 8 working endpoints, including the solver-backed hint. It validates input and returns
+    JSON errors with status 400, 404, 409 or 429.</li>
+  <li><strong>Tested:</strong> 18 automated tests (<code>npm test</code> in <code>backend/</code>). One plays 300 random games by following hints and
+    checks that no hint ever points at a mine. The others cover the game rules, validation, a full game won through the API,
+    and the hint limit. The UI was also played end to end in a browser (Figure 3).</li>
+</ul>
+
+</body>
+</html>
