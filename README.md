@@ -11,6 +11,8 @@ solver always decides the hint, so hints are never wrong.
 **Phase II status:** a working client–server prototype of the core gameplay, the solver-backed hint, and a
 leaderboard. User accounts, saved game history, the database and the LLM come in Phase III. The design
 documentation (Parts A–D) is in [`docs/phase2_report.pdf`](docs/phase2_report.pdf).
+**Phase III Sprint 1 status:** moved score-storing over to SQLite using better-sqlite3. Made small adjustments
+to some frontend elements.
 
 ## Project structure
 
@@ -46,7 +48,7 @@ tcss460-minesweeper-project/
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/) 18 or newer (tested with Node 24) and npm
+- [Node.js](https://nodejs.org/) 22 or newer (tested with Node 24) and npm
 
 ## Setup and run
 
@@ -82,7 +84,7 @@ Nothing needs configuring to run the prototype. To change the defaults, copy `ba
 | --- | --- | --- |
 | `PORT` | `3001` | Port for the Express API |
 | `CORS_ORIGIN` | `http://localhost:5173` | Browser origin allowed to call the API directly |
-| `SCORES_FILE` | `backend/data/scores.json` | Where leaderboard scores are saved |
+| `DB_FILE` | `backend/data/scores.db` | Where leaderboard scores are saved |
 | `HINTS_PER_GAME` | `3` | Hints allowed per game |
 
 If you change `PORT`, start the frontend with `API_PROXY_TARGET=http://localhost:<port> npm run dev` so the
@@ -159,7 +161,5 @@ Planned Phase III endpoints (sign up, log in, my stats, game history, post-game 
 ## Data storage
 
 - Games in progress are kept **in memory** and are lost when the server restarts.
-- Scores are saved to `backend/data/scores.json`. It is created from `sample_scores.json` on first run
+- Scores are saved to `backend/data/scores.db`. It is created from `sample_scores.json` on first run
   and ignored by git. Delete it to reset the leaderboard.
-- Phase III moves everything into a relational database (PostgreSQL or SQLite) with `users`, `games` and
-  `moves` tables (see Part C of the report).

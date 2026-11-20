@@ -1,15 +1,11 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { createApp } from '../app.js';
 import { createGameStore } from '../lib/gameStore.js';
 import { createScoreStore } from '../lib/scoreStore.js';
 
-const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'minesweeper-test-'));
 const gameStore = createGameStore();
-const scoreStore = createScoreStore(path.join(tempDir, 'scores.json'));
+const scoreStore = createScoreStore(':memory:');
 let server;
 let baseUrl;
 
@@ -21,7 +17,7 @@ before(async () => {
 
 after(() => {
   server.close();
-  fs.rmSync(tempDir, { recursive: true, force: true });
+  scoreStore.close();
 });
 
 async function api(method, route, body) {

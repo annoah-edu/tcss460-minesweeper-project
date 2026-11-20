@@ -29,7 +29,7 @@ export default function HintPanel({ game, hint, onGetHint, busy }) {
         ) : (
           <p className="muted">
             {game
-              ? 'Stuck? A hint highlights a square that is provably safe and explains why.'
+              ? 'Stuck? A hint highlights a square that is probably safe and explains why.'
               : 'Start a game to use hints.'}
           </p>
         )}

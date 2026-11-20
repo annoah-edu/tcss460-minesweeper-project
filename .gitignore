@@ -8,7 +8,9 @@ dist/
 !.env.example
 
 # Runtime data (the backend recreates it from data/sample_scores.json)
-backend/data/scores.json
+backend/data/*.db
+backend/data/*.db-wal
+backend/data/*.db-shm
 
 # Logs and OS files
 *.log
