@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 const FACES = { ready: '🙂', playing: '🙂', won: '😎', lost: '😵' };
 
-export default function StatusBar({ game, clockStart }) {
+export default function StatusBar({ game, clockStart, onRestart, disabled }) {
   const [now, setNow] = useState(Date.now());
 
   // The server is the real clock; this only ticks the display between requests.
@@ -20,7 +20,16 @@ export default function StatusBar({ game, clockStart }) {
     <div className="status">
       <div className="status-bar">
         <span className="counter" title="Mines left (mines minus flags)">🚩 {game.minesRemaining}</span>
-        <span className="face" aria-hidden="true">{FACES[game.status]}</span>
+        <button
+          type="button"
+          className="face"
+          onClick={onRestart}
+          disabled={disabled}
+          title="Start a new game with the same settings"
+          aria-label="Start a new game with the same settings"
+        >
+          {FACES[game.status]}
+        </button>
         <span className="counter" title="Time">⏱ {Math.floor(seconds)}s</span>
       </div>
 

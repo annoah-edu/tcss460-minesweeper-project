@@ -145,7 +145,17 @@ button.primary:disabled, button.ghost:disabled { opacity: 0.5; cursor: not-allow
   font-variant-numeric: tabular-nums;
 }
 
-.face { font-size: 1.6rem; }
+.face {
+  font-size: 1.6rem;
+  line-height: 1;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.face:hover:not(:disabled) { transform: scale(1.15); }
+.face:disabled { cursor: default; }
 .message { margin: 8px 0; font-weight: 600; }
 .message.win { color: var(--success); }
 .message.loss { color: var(--danger); }

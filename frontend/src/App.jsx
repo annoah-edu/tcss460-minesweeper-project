@@ -17,6 +17,7 @@ export default function App() {
   const [flagMode, setFlagMode] = useState(false);
   const [leaderboardDifficulty, setLeaderboardDifficulty] = useState('beginner');
   const [leaderboardVersion, setLeaderboardVersion] = useState(0);
+  const [lastOptions, setLastOptions] = useState(null);
 
   useEffect(() => {
     getDifficulties().then(setDifficulties).catch((err) => setError(err.message));
@@ -47,7 +48,10 @@ export default function App() {
     }
   }
 
-  const handleStart = (options) => send(async () => showGame(await startGame(options)));
+  const handleStart = (options) => send(async () => {
+    showGame(await startGame(options));
+    setLastOptions(options);
+  });
   const handleReveal = (row, col) => send(async () => showGame(await revealCell(game.gameId, row, col)));
   const handleFlag = (row, col) => send(async () => showGame(await flagCell(game.gameId, row, col)));
   const handleHint = () => send(async () => {
@@ -68,7 +72,12 @@ export default function App() {
 
             {game ? (
               <>
-                <StatusBar game={game} clockStart={clockStart} />
+                <StatusBar
+                  game={game}
+                  clockStart={clockStart}
+                  onRestart={() => handleStart(lastOptions)}
+                  disabled={busy}
+                />
                 <label className="flag-mode">
                   <input type="checkbox" checked={flagMode} onChange={(e) => setFlagMode(e.target.checked)} />
                   Flag mode (for touch screens: taps place flags)
